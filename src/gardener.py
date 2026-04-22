@@ -1,7 +1,8 @@
 from datetime import datetime
 import asyncio
-from plant import Plant
-from plant_status import PlantStatus
+
+from Plant.plant_status import PlantStatus
+from Plant.plant import Plant
 
 
 class Gardener :
@@ -17,7 +18,7 @@ class Gardener :
         print(f"{self.name} moves in the garden.")
         
     def leave_garden(self):
-        self.garden = None
+        self.garden = []
         print(f"{self.name} leaves the garden.")
         
     async def start_working(self):

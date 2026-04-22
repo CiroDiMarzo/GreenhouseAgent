@@ -2,8 +2,8 @@ from pathlib import Path
 from csv import DictReader
 from datetime import datetime, timedelta
 from gardener import Gardener
-from plant import Plant
-from globals import date_format
+from Plant.plant import Plant
+from globals import DATE_FORMAT
 import random
 import asyncio
 
@@ -20,7 +20,7 @@ def init_from_file(file_name: str) -> list[Plant]:
             for stored_plant in plants_reader:
                 try:
                     date_added = datetime.strptime(
-                        stored_plant["Data inserimento"], date_format
+                        stored_plant["Data inserimento"], DATE_FORMAT
                     )
                     plant = Plant(
                             int(stored_plant["ID"]),

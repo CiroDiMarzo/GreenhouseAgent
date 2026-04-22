@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
-from plant_status import PlantStatus
-from globals import date_format
+from Plant.plant_status import PlantStatus
+from globals import DATE_FORMAT
 
 
 class Plant:
@@ -46,4 +46,4 @@ class Plant:
         return f"ID: {self.id}) - Specie: {self.specie} - Salute: {", ".join(s_status.value for s_status in self.status)}"
 
     def full_print(self):
-        return f"ID: {self.id}, Specie: {self.specie}, Data inserimento: {self.date_added.strftime(date_format)}, Ultima innaffiatura: {self.date_watered.strftime(date_format)}, Data applicazione nutrienti: {self.date_fertilized}, Data applicazione pesticida: {self.date_cured}, Salute: {", ".join(s_status.value for s_status in self.status)}"
+        return f"ID: {self.id}, Specie: {self.specie}, Data inserimento: {self.date_added.strftime(DATE_FORMAT)}, Ultima innaffiatura: {self.date_watered.strftime(DATE_FORMAT)}, Data applicazione nutrienti: {self.date_fertilized}, Data applicazione pesticida: {self.date_cured}, Salute: {", ".join(s_status.value for s_status in self.status)}"
