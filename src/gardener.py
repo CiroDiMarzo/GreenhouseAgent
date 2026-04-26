@@ -46,12 +46,12 @@ class Gardener:
             garden: Lista di piante che compongono l'orto
         """
         self.garden = garden
-        print(f"{self.name} moves in the garden.")
+        logger.info(f"{self.name} moves in the garden.")
 
     def leave_garden(self) -> None:
         """Rimuove il giardiniere dall'orto."""
         self.garden = []
-        print(f"{self.name} leaves the garden.")
+        logger.info(f"{self.name} leaves the garden.")
 
     async def start_working(self) -> None:
         """Avvia il ciclo di lavoro principale del giardiniere.
@@ -60,9 +60,9 @@ class Gardener:
         Questo metodo è asincrono e può essere interrotto con Ctrl+C.
         """
         while True:
-            print(f"-- Start working")
+            logger.info("-- Start working")
             await self.perform_maintenance()
-            print(f"-- Work concluded")
+            logger.info("-- Work concluded")
             # Attende un numero configurato secondi prima del prossimo ciclo di manutenzione
             await asyncio.sleep(GARDENER_IDLE_TIME)
 
@@ -80,7 +80,7 @@ class Gardener:
         """
         # Verifica se il giardiniere è assegnato a un orto
         if not self.garden:
-            print(f"{self.name} is not in a garden")
+            logger.warning(f"{self.name} is not in a garden")
             return
 
         # Itera su tutte le piante nell'orto
@@ -114,7 +114,7 @@ class Gardener:
             plant: Pianta da innaffiare
         """
         plant.date_watered = datetime.now()
-        print(f"Watering plant {plant}")
+        logger.info(f"Watering plant {plant}")
 
     async def fertilize_plant(self, plant: Plant) -> None:
         """Fertilizza una pianta e aggiorna la data dell'ultima fertilizzazione.
@@ -123,7 +123,7 @@ class Gardener:
             plant: Pianta da fertilizzare
         """
         plant.date_fertilized = datetime.now()
-        print(f"Fertilizing plant {plant}")
+        logger.info(f"Fertilizing plant {plant}")
 
     async def apply_pesticide(self, plant: Plant) -> None:
         """Applica pesticida a una pianta e aggiorna la data dell'ultima applicazione.
@@ -132,4 +132,4 @@ class Gardener:
             plant: Pianta da curare con pesticida
         """
         plant.date_cured = datetime.now()
-        print(f"Applying pesticide to plant {plant}")
+        logger.info(f"Applying pesticide to plant {plant}")
