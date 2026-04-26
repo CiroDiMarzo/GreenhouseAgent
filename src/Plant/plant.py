@@ -1,10 +1,21 @@
 from datetime import datetime, timedelta
+import random
 from Plant.plant_status import PlantStatus
-from globals import DATE_FORMAT
+from globals import (
+    DATE_FORMAT,
+    PLANT_TIME_DELTA_THIRSTY,
+    PLANT_TIME_DELTA_HUNGRY,
+    PLANT_TIME_DELTA_SICK,
+    roll_dice
+)
 
 
 class Plant:
     """Represents a plant with health monitoring capabilities."""
+    
+    # Probability (0-100) that a plant transitions to unhealthy status
+    # when time thresholds are exceeded
+    CHANGE_STATUS_PERCENT = 75
 
     def __init__(
         self,
@@ -25,21 +36,34 @@ class Plant:
         self.status = status
 
     def inspect(self):
+        """Inspect plant health status based on time since last maintenance.
+        
+        Evaluates if plant is thirsty, hungry, or sick based on time thresholds,
+        using probabilistic evaluation with CHANGE_STATUS_PERCENT chance.
+        If none of the negative statuses apply, marks plant as HEALTHY.
+        """
         time_passed_since_water = datetime.now() - self.date_watered
         time_passed_since_fertilized = datetime.now() - self.date_fertilized
         time_passed_since_cured = datetime.now() - self.date_cured
         self.status.clear()
 
-        if time_passed_since_water >= timedelta(seconds=30):
-            self.status.append(PlantStatus.THIRSTY)
-        
-        if time_passed_since_fertilized >= timedelta(seconds=40):
-            self.status.append(PlantStatus.HUNGRY)
-            
-        if time_passed_since_cured >= timedelta(seconds=50):
-            self.status.append(PlantStatus.SICK)
-            
-        if PlantStatus.THIRSTY not in self.status and PlantStatus.HUNGRY not in self.status and PlantStatus.SICK not in self.status:
+        if time_passed_since_water >= timedelta(seconds=PLANT_TIME_DELTA_THIRSTY):
+            if roll_dice(self.CHANGE_STATUS_PERCENT):
+                self.status.append(PlantStatus.THIRSTY)
+
+        if time_passed_since_fertilized >= timedelta(seconds=PLANT_TIME_DELTA_HUNGRY):
+            if roll_dice(self.CHANGE_STATUS_PERCENT):
+                self.status.append(PlantStatus.HUNGRY)
+
+        if time_passed_since_cured >= timedelta(seconds=PLANT_TIME_DELTA_SICK):
+            if roll_dice(self.CHANGE_STATUS_PERCENT):
+                self.status.append(PlantStatus.SICK)
+
+        if (
+            PlantStatus.THIRSTY not in self.status
+            and PlantStatus.HUNGRY not in self.status
+            and PlantStatus.SICK not in self.status
+        ):
             self.status.append(PlantStatus.HEALTHY)
 
     def __str__(self):
