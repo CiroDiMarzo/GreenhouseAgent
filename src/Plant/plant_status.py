@@ -6,3 +6,4 @@ class PlantStatus(Enum):
     HUNGRY = 'hungry'
     HEALTHY = 'healthy'
     SICK = 'sick'
+    NEEDS_WATER = 'needs_water'

@@ -65,6 +65,9 @@ class Plant:
             and PlantStatus.SICK not in self.status
         ):
             self.status.append(PlantStatus.HEALTHY)
+            
+    def inspect_environment(self, moisture: float):
+        raise NotImplementedError(f"Not implemented")        
 
     def __str__(self):
         return f"ID: {self.id}) - Specie: {self.specie} - Salute: {", ".join(s_status.value for s_status in self.status)}"

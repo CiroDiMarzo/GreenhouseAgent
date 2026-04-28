@@ -13,31 +13,31 @@ logger = logging.getLogger(__name__)
 
 class PlantRepository:
     def __init__(self, db_path: str):
-        """Inizializza il repository con il percorso del database.
+        """Initializes the repository with the database path.
 
         Args:
-            db_path: Percorso del file database SQLite
+            db_path: Path to the SQLite database file
 
         Raises:
-            ValueError: Se db_path è vuoto o None
-            sqlite3.Error: Se non è possibile connettersi al database
+            ValueError: If db_path is empty or None
+            sqlite3.Error: If unable to connect to the database
         """
         if not db_path:
-            raise ValueError("db_path non può essere vuoto")
+            raise ValueError("db_path cannot be empty")
 
         self.db_path = db_path
         try:
             self._init_db()
-            logger.info(f"Repository inizializzato correttamente con db: {db_path}")
+            logger.info(f"Repository initialized correctly with db: {db_path}")
         except sqlite3.Error as e:
-            logger.error(f"Errore durante l'inizializzazione del database: {e}")
+            logger.error(f"Error during database initialization: {e}")
             raise
 
     def _init_db(self):
-        """Inizializza la tabella Plant nel database se necessario.
+        """Initializes the Plant table in the database if necessary.
 
         Raises:
-            sqlite3.Error: Se si verifica un errore durante la creazione della tabella
+            sqlite3.Error: If an error occurs during table creation
         """
         try:
             with sqlite3.connect(self.db_path) as connection:
@@ -56,27 +56,27 @@ class PlantRepository:
                 """
                 )
                 connection.commit()
-                logger.debug("Tabella plants creata o già esistente")
+                logger.debug("plants table created or already exists")
         except sqlite3.Error as e:
-            logger.error(f"Errore nella inizializzazione del database: {e}")
+            logger.error(f"Error initializing the database: {e}")
             raise
 
     def save(self, plant: Plant):
-        """Salva o aggiorna una pianta nel database.
+        """Saves or updates a plant in the database.
 
         Args:
-            plant: Istanza di Plant da salvare
+            plant: Plant instance to save
 
         Raises:
-            TypeError: Se plant non è un'istanza di Plant
-            ValueError: Se plant non contiene dati validi
-            sqlite3.Error: Se si verifica un errore durante il salvataggio
+            TypeError: If plant is not a Plant instance
+            ValueError: If plant does not contain valid data
+            sqlite3.Error: If an error occurs during saving
         """
         if not isinstance(plant, Plant):
             raise TypeError(f"Expected Plant object, got {type(plant).__name__}")
 
         try:
-            # Convertiamo la lista di Enum in una stringa separata da virgole
+            # Convert the Enum list into a comma-separated string
             status_str = ",".join(s.value for s in plant.status) if plant.status else ""
 
             with sqlite3.connect(self.db_path) as connection:
@@ -98,26 +98,26 @@ class PlantRepository:
                     ),
                 )
                 connection.commit()
-                logger.info(f"Pianta con id {plant.id} salvata correttamente")
+                logger.info(f"Plant with id {plant.id} saved successfully")
         except AttributeError as e:
-            logger.error(f"Errore: Pianta mancante di attributo obbligatorio: {e}")
-            raise ValueError(f"Plant non contiene tutti gli attributi necessari: {e}")
+            logger.error(f"Error: {self.__class__.__name__} missing required attribute: {e}")
+            raise ValueError(f"{self.__class__.__name__} does not contain all necessary attributes: {e}")
         except sqlite3.Error as e:
-            logger.error(f"Errore durante il salvataggio della pianta: {e}")
+            logger.error(f"Error during {self.__class__.__name__} saving: {e}")
             raise
         except Exception as e:
-            logger.error(f"Errore inaspettato durante il salvataggio: {e}")
+            logger.error(f"Unexpected error during saving: {e}")
             raise
 
     def get_all(self) -> list[Plant]:
-        """Recupera tutte le piante dal database.
+        """Retrieves all plants from the database.
 
         Returns:
-            Lista di piante. Lista vuota se nessuna pianta trovata.
+            List of plants. Empty list if no plants found.
 
         Raises:
-            sqlite3.Error: Se si verifica un errore durante la lettura dal database
-            ValueError: Se i dati nel database sono corrotti
+            sqlite3.Error: If an error occurs during reading from the database
+            ValueError: If data in the database is corrupted
         """
         plant_list: list[Plant] = []
         try:
@@ -141,46 +141,46 @@ class PlantRepository:
                         plant_list.append(plant)
                     except (ValueError, KeyError) as e:
                         logger.warning(
-                            f"Errore nel parsing della riga {idx}: {e}. Riga saltata."
+                            f"Error parsing row {idx}: {e}. Row skipped."
                         )
                         continue
                     except Exception as e:
                         logger.error(
-                            f"Errore inaspettato nel parsing della riga {idx}: {e}"
+                            f"Unexpected error parsing row {idx}: {e}"
                         )
                         raise
 
-                logger.info(f"Recuperate {len(plant_list)} piante dal database")
+                logger.info(f"Retrieved {len(plant_list)} plants from the database")
         except sqlite3.Error as e:
-            logger.error(f"Errore durante la lettura dal database: {e}")
+            logger.error(f"Error during reading from the database: {e}")
             raise
         except Exception as e:
-            logger.error(f"Errore inaspettato durante get_all: {e}")
+            logger.error(f"Unexpected error during get_all: {e}")
             raise
 
         return plant_list
 
     def get_by_id(self, plant_id: int) -> Plant:
-        """Recupera una pianta per ID dal database.
+        """Retrieves a plant by ID from the database.
 
         Args:
-            plant_id: ID della pianta da recuperare
+            plant_id: ID of the plant to retrieve
 
         Returns:
-            Istanza di Plant corrispondente all'ID
+            Plant instance corresponding to the ID
 
         Raises:
-            TypeError: Se plant_id non è un intero
-            ValueError: Se pianta con questo ID non esiste o dati corrotti
-            sqlite3.Error: Se si verifica un errore durante la lettura dal database
+            TypeError: If plant_id is not an integer
+            ValueError: If plant with this ID does not exist or data is corrupted
+            sqlite3.Error: If an error occurs during reading from the database
         """
         if not isinstance(plant_id, int):
             raise TypeError(
-                f"plant_id deve essere un intero, ricevuto {type(plant_id).__name__}"
+                f"plant_id must be an integer, received {type(plant_id).__name__}"
             )
 
         if plant_id <= 0:
-            raise ValueError(f"plant_id deve essere positivo, ricevuto {plant_id}")
+            raise ValueError(f"plant_id must be positive, received {plant_id}")
 
         try:
             with sqlite3.connect(self.db_path) as connection:
@@ -189,7 +189,7 @@ class PlantRepository:
                 row = cursor.fetchone()
 
                 if row is None:
-                    logger.warning(f"Pianta con id {plant_id} non trovata")
+                    logger.warning(f"Plant with id {plant_id} not found")
                     raise ValueError(f"Plant with id {plant_id} not found")
 
                 try:
@@ -203,22 +203,22 @@ class PlantRepository:
                         date_cured=datetime.strptime(row[5], DATE_FORMAT),
                         status=status_list,
                     )
-                    logger.info(f"Pianta con id {plant_id} recuperata correttamente")
+                    logger.info(f"Plant with id {plant_id} retrieved successfully")
                     return plant
                 except (ValueError, KeyError) as e:
                     logger.error(
-                        f"Errore nel parsing dei dati della pianta con id {plant_id}: {e}"
+                        f"Error parsing data for plant with id {plant_id}: {e}"
                     )
                     raise ValueError(
-                        f"Dati corrotti per la pianta con id {plant_id}: {e}"
+                        f"Corrupted data for plant with id {plant_id}: {e}"
                     )
         except sqlite3.Error as e:
             logger.error(
-                f"Errore durante la lettura della pianta con id {plant_id}: {e}"
+                f"Error during reading plant with id {plant_id}: {e}"
             )
             raise
         except ValueError:
             raise
         except Exception as e:
-            logger.error(f"Errore inaspettato durante get_by_id({plant_id}): {e}")
+            logger.error(f"Unexpected error during get_by_id({plant_id}): {e}")
             raise
