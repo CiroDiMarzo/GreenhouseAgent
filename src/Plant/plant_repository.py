@@ -28,7 +28,6 @@ class PlantRepository:
         self.db_path = db_path
         try:
             self._init_db()
-            logger.info(f"Repository initialized correctly with db: {db_path}")
         except sqlite3.Error as e:
             logger.error(f"Error during database initialization: {e}")
             raise
@@ -55,6 +54,17 @@ class PlantRepository:
                     )
                 """
                 )
+                # Check if zone_id column already exists
+                cursor.execute("PRAGMA table_info(plants)")
+                columns = {row[1] for row in cursor.fetchall()}
+                
+                if "zone_id" not in columns:
+                    cursor.execute(
+                        """
+                        ALTER TABLE plants ADD COLUMN zone_id INTEGER REFERENCES plant_zones(id);
+                        """
+                    )
+                
                 connection.commit()
                 logger.debug("plants table created or already exists")
         except sqlite3.Error as e:
@@ -84,8 +94,8 @@ class PlantRepository:
                 cursor.execute(
                     """
                     INSERT OR REPLACE INTO plants 
-                    (id, specie, date_added, date_watered, date_fertilized, date_cured, status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    (id, specie, date_added, date_watered, date_fertilized, date_cured, status, zone_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         plant.id,
@@ -95,6 +105,7 @@ class PlantRepository:
                         plant.date_fertilized.strftime(DATE_FORMAT),
                         plant.date_cured.strftime(DATE_FORMAT),
                         status_str,
+                        plant.zone_id
                     ),
                 )
                 connection.commit()
@@ -137,6 +148,7 @@ class PlantRepository:
                             date_fertilized=datetime.strptime(row[4], DATE_FORMAT),
                             date_cured=datetime.strptime(row[5], DATE_FORMAT),
                             status=status_list,
+                            zone_id=int(row[7])
                         )
                         plant_list.append(plant)
                     except (ValueError, KeyError) as e:
@@ -202,6 +214,7 @@ class PlantRepository:
                         date_fertilized=datetime.strptime(row[4], DATE_FORMAT),
                         date_cured=datetime.strptime(row[5], DATE_FORMAT),
                         status=status_list,
+                        zone_id=int(row[7])
                     )
                     logger.info(f"Plant with id {plant_id} retrieved successfully")
                     return plant

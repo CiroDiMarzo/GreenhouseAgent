@@ -26,6 +26,7 @@ class Plant:
         date_fertilized: datetime,
         date_cured: datetime,
         status: list[PlantStatus],
+        zone_id: int
     ):
         self.specie = specie
         self.id = id
@@ -34,6 +35,7 @@ class Plant:
         self.date_fertilized = date_fertilized
         self.date_cured = date_cured
         self.status = status
+        self.zone_id = zone_id
 
     def inspect(self):
         """Inspect plant health status based on time since last maintenance.
@@ -73,4 +75,4 @@ class Plant:
         return f"ID: {self.id}) - Specie: {self.specie} - Salute: {", ".join(s_status.value for s_status in self.status)}"
 
     def full_print(self):
-        return f"ID: {self.id}, Specie: {self.specie}, Data inserimento: {self.date_added.strftime(DATE_FORMAT)}, Ultima innaffiatura: {self.date_watered.strftime(DATE_FORMAT)}, Data applicazione nutrienti: {self.date_fertilized}, Data applicazione pesticida: {self.date_cured}, Salute: {", ".join(s_status.value for s_status in self.status)}"
+        return f"ID: {self.id}, Specie: {self.specie}, Data inserimento: {self.date_added.strftime(DATE_FORMAT)}, Ultima innaffiatura: {self.date_watered.strftime(DATE_FORMAT)}, Data applicazione nutrienti: {self.date_fertilized}, Data applicazione pesticida: {self.date_cured}, Salute: {", ".join(s_status.value for s_status in self.status)}, Zona: {self.zone_id}"

@@ -12,7 +12,7 @@ logging.basicConfig(
 
 logger = logging.getLogger()
 
-class PlantRepository:
+class PlantZoneRepository:
     def __init__(self, db_path: str):
         
         if not db_path:
@@ -24,7 +24,6 @@ class PlantRepository:
         
         try:
             self.__init__db()
-            logger.info(f"Repository initialized successfully with database: {db_path}")
         except sqlite3.Error as e:
             logger.error(f"Failed to initialize database at {db_path}: {e}")
             raise sqlite3.Error(
