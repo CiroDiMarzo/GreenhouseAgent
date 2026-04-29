@@ -12,7 +12,7 @@ import random
 import asyncio
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('main')
 
 
 async def main():

@@ -9,7 +9,6 @@ from Plant.plant import Plant
 from globals import LOG_FORMAT, GARDENER_IDLE_TIME
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-logger = logging.getLogger(__name__)
 
 
 class Gardener:
@@ -19,6 +18,8 @@ class Gardener:
     (innaffiatura, fertilizzazione, applicazione di pesticidi) in base allo stato di salute
     di ogni pianta. Le modifiche vengono persistite nel database tramite PlantRepository.
     """
+    
+    logger = logging.getLogger('Gardener')
 
     def __init__(self, name: str, plant_repository: PlantRepository):
         """Inizializza un nuovo giardiniere.
@@ -46,12 +47,12 @@ class Gardener:
             garden: Lista di piante che compongono l'orto
         """
         self.garden = garden
-        logger.info(f"{self.name} moves in the garden.")
+        self.logger.info(f"{self.name} moves in the garden.")
 
     def leave_garden(self) -> None:
         """Rimuove il giardiniere dall'orto."""
         self.garden = []
-        logger.info(f"{self.name} leaves the garden.")
+        self.logger.info(f"{self.name} leaves the garden.")
 
     async def start_working(self) -> None:
         """Avvia il ciclo di lavoro principale del giardiniere.
@@ -60,9 +61,9 @@ class Gardener:
         Questo metodo è asincrono e può essere interrotto con Ctrl+C.
         """
         while True:
-            logger.info("-- Start working")
+            self.logger.info("-- Start working")
             await self.perform_maintenance()
-            logger.info("-- Work concluded")
+            self.logger.info("-- Work concluded")
             # Attende un numero configurato secondi prima del prossimo ciclo di manutenzione
             await asyncio.sleep(GARDENER_IDLE_TIME)
 
@@ -80,7 +81,7 @@ class Gardener:
         """
         # Verifica se il giardiniere è assegnato a un orto
         if not self.garden:
-            logger.warning(f"{self.name} is not in a garden")
+            self.logger.warning(f"{self.name} is not in a garden")
             return
 
         # Itera su tutte le piante nell'orto
@@ -103,7 +104,7 @@ class Gardener:
             try:
                 self.plant_repository.save(plant)
             except (ValueError, sqlite3.Error) as exc:
-                logger.error(
+                self.logger.error(
                     f"Errore durante il salvataggio della pianta {plant} alla riga {row_num}: {exc}"
                 )
 
@@ -114,7 +115,7 @@ class Gardener:
             plant: Pianta da innaffiare
         """
         plant.date_watered = datetime.now()
-        logger.info(f"Watering plant {plant}")
+        self.logger.info(f"Watering plant {plant}")
 
     async def fertilize_plant(self, plant: Plant) -> None:
         """Fertilizza una pianta e aggiorna la data dell'ultima fertilizzazione.
@@ -123,7 +124,7 @@ class Gardener:
             plant: Pianta da fertilizzare
         """
         plant.date_fertilized = datetime.now()
-        logger.info(f"Fertilizing plant {plant}")
+        self.logger.info(f"Fertilizing plant {plant}")
 
     async def apply_pesticide(self, plant: Plant) -> None:
         """Applica pesticida a una pianta e aggiorna la data dell'ultima applicazione.
@@ -132,4 +133,4 @@ class Gardener:
             plant: Pianta da curare con pesticida
         """
         plant.date_cured = datetime.now()
-        logger.info(f"Applying pesticide to plant {plant}")
+        self.logger.info(f"Applying pesticide to plant {plant}")

@@ -12,7 +12,7 @@ from PlantZone.plant_zone_repository import PlantZoneRepository
 from globals import DATE_FORMAT, LOG_FORMAT
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('migration')
 
 
 def load_data(

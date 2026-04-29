@@ -10,9 +10,9 @@ logging.basicConfig(
     format=LOG_FORMAT
 )
 
-logger = logging.getLogger()
-
 class PlantZoneRepository:
+    logger = logging.getLogger('PlantZoneRepository')
+    
     def __init__(self, db_path: str):
         
         if not db_path:
@@ -25,7 +25,7 @@ class PlantZoneRepository:
         try:
             self.__init__db()
         except sqlite3.Error as e:
-            logger.error(f"Failed to initialize database at {db_path}: {e}")
+            self.logger.error(f"Failed to initialize database at {db_path}: {e}")
             raise sqlite3.Error(
                 f"Unable to initialize PlantRepository with database file '{db_path}'. "
                 f"Database error: {str(e)}"
@@ -45,9 +45,9 @@ class PlantZoneRepository:
                     """
                 )
                 connection.commit()
-                logger.debug("plant_zones table created or already exists")
+                self.logger.debug("plant_zones table created or already exists")
         except sqlite3.Error as e:
-            logger.error(f"Failed to create plant_zones table in database: {e}")
+            self.logger.error(f"Failed to create plant_zones table in database: {e}")
             raise sqlite3.Error(
                 f"Unable to initialize database schema. Failed to create 'plant_zones' table. "
                 f"Database error: {str(e)}"
@@ -76,15 +76,15 @@ class PlantZoneRepository:
                     ),
                 )
                 connection.commit()
-                logger.info(f"Plant zone with id {plant_zone.id} saved successfully")
+                self.logger.info(f"Plant zone with id {plant_zone.id} saved successfully")
         except AttributeError as e:
-            logger.error(f"Error: {self.__class__.__name__} missing required attribute: {e}")
+            self.logger.error(f"Error: {self.__class__.__name__} missing required attribute: {e}")
             raise ValueError(f"{self.__class__.__name__} does not contain all necessary attributes: {e}")
         except sqlite3.Error as e:
-            logger.error(f"Error during {self.__class__.__name__} saving: {e}")
+            self.logger.error(f"Error during {self.__class__.__name__} saving: {e}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error during saving: {e}")
+            self.logger.error(f"Unexpected error during saving: {e}")
             raise
 
     def get_by_id(self, zone_id: int) -> PlantZone:

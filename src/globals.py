@@ -14,8 +14,8 @@ import logging
 # Format string for datetime objects throughout the application
 DATE_FORMAT = '%d/%m/%Y %H:%M:%S.%f'
 
-# Format string for logging output (timestamp - level - message)
-LOG_FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
+# Format string for logging output (timestamp - level - class name - message)
+LOG_FORMAT = '%(asctime)s - %(levelname)s - [%(name)s] - %(message)s'
 
 # ============================================================================
 # Timing Constants (in seconds)

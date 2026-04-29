@@ -7,11 +7,11 @@ from Plant.plant_status import PlantStatus
 from globals import DATE_FORMAT, LOG_FORMAT
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-# Configurazione logging
-logger = logging.getLogger(__name__)
 
 
 class PlantRepository:
+    logger = logging.getLogger('PlantRepository')
+    
     def __init__(self, db_path: str):
         """Initializes the repository with the database path.
 
@@ -29,7 +29,7 @@ class PlantRepository:
         try:
             self._init_db()
         except sqlite3.Error as e:
-            logger.error(f"Error during database initialization: {e}")
+            self.logger.error(f"Error during database initialization: {e}")
             raise
 
     def _init_db(self):
@@ -66,9 +66,9 @@ class PlantRepository:
                     )
                 
                 connection.commit()
-                logger.debug("plants table created or already exists")
+                self.logger.debug("plants table created or already exists")
         except sqlite3.Error as e:
-            logger.error(f"Error initializing the database: {e}")
+            self.logger.error(f"Error initializing the database: {e}")
             raise
 
     def save(self, plant: Plant):
@@ -109,15 +109,15 @@ class PlantRepository:
                     ),
                 )
                 connection.commit()
-                logger.info(f"Plant with id {plant.id} saved successfully")
+                self.logger.info(f"Plant with id {plant.id} saved successfully")
         except AttributeError as e:
-            logger.error(f"Error: {self.__class__.__name__} missing required attribute: {e}")
+            self.logger.error(f"Error: {self.__class__.__name__} missing required attribute: {e}")
             raise ValueError(f"{self.__class__.__name__} does not contain all necessary attributes: {e}")
         except sqlite3.Error as e:
-            logger.error(f"Error during {self.__class__.__name__} saving: {e}")
+            self.logger.error(f"Error during {self.__class__.__name__} saving: {e}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error during saving: {e}")
+            self.logger.error(f"Unexpected error during saving: {e}")
             raise
 
     def get_all(self) -> list[Plant]:
@@ -152,22 +152,22 @@ class PlantRepository:
                         )
                         plant_list.append(plant)
                     except (ValueError, KeyError) as e:
-                        logger.warning(
+                        self.logger.warning(
                             f"Error parsing row {idx}: {e}. Row skipped."
                         )
                         continue
                     except Exception as e:
-                        logger.error(
+                        self.logger.error(
                             f"Unexpected error parsing row {idx}: {e}"
                         )
                         raise
 
-                logger.info(f"Retrieved {len(plant_list)} plants from the database")
+                self.logger.info(f"Retrieved {len(plant_list)} plants from the database")
         except sqlite3.Error as e:
-            logger.error(f"Error during reading from the database: {e}")
+            self.logger.error(f"Error during reading from the database: {e}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error during get_all: {e}")
+            self.logger.error(f"Unexpected error during get_all: {e}")
             raise
 
         return plant_list
@@ -201,7 +201,7 @@ class PlantRepository:
                 row = cursor.fetchone()
 
                 if row is None:
-                    logger.warning(f"Plant with id {plant_id} not found")
+                    self.logger.warning(f"Plant with id {plant_id} not found")
                     raise ValueError(f"Plant with id {plant_id} not found")
 
                 try:
@@ -216,22 +216,22 @@ class PlantRepository:
                         status=status_list,
                         zone_id=int(row[7])
                     )
-                    logger.info(f"Plant with id {plant_id} retrieved successfully")
+                    self.logger.info(f"Plant with id {plant_id} retrieved successfully")
                     return plant
                 except (ValueError, KeyError) as e:
-                    logger.error(
+                    self.logger.error(
                         f"Error parsing data for plant with id {plant_id}: {e}"
                     )
                     raise ValueError(
                         f"Corrupted data for plant with id {plant_id}: {e}"
                     )
         except sqlite3.Error as e:
-            logger.error(
+            self.logger.error(
                 f"Error during reading plant with id {plant_id}: {e}"
             )
             raise
         except ValueError:
             raise
         except Exception as e:
-            logger.error(f"Unexpected error during get_by_id({plant_id}): {e}")
+            self.logger.error(f"Unexpected error during get_by_id({plant_id}): {e}")
             raise
