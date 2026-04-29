@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 logger = logging.getLogger(__name__)
 
 
-def migrate_plants(
+def load_data(
     csv_file_path: str, csv_zone_file_path: str, db_file_path: str
 ) -> None:
     """Migrate plants from CSV files to SQLite database.
