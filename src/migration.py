@@ -184,7 +184,6 @@ def read_garden(csv_file_path: str, zone_id: int) -> list[Plant]:
                         status=[],
                         zone_id=zone_id,
                     )
-                    new_plant.inspect()
                     plant_list.append(new_plant)
 
                 except ValueError as e:
@@ -260,56 +259,3 @@ def read_zones(csv_zones_file_path: str) -> list[PlantZone]:
 
     logger.info(f"Zones read completed: {len(plant_zone_list)} zones loaded")
     return plant_zone_list
-
-
-def init_from_file(file_name: str, zone_id: int = 1) -> list[Plant]:
-    """Load plants from a local file (used for initial setup).
-
-    Args:
-        file_name: Name of the file relative to the src directory
-        zone_id: Zone ID to assign to all plants (default: 1)
-
-    Returns:
-        List of Plant objects loaded from file (empty list if file not found or parsing fails)
-    """
-    garden: list[Plant] = []
-
-    file_path = Path(__file__).parent / file_name
-
-    if not file_path.exists():
-        logger.error(f"Plants file not found: {file_path}")
-        return garden
-
-    try:
-        with open(file_path, "r", encoding="UTF-8") as plants_file:
-            plants_reader = DictReader(plants_file)
-            current_time = datetime.now()
-            
-            for row_number, stored_plant in enumerate(plants_reader, start=2):
-                try:
-                    date_added = datetime.strptime(
-                        stored_plant["Data inserimento"], DATE_FORMAT
-                    )
-                    plant = Plant(
-                        int(stored_plant["ID"]),
-                        stored_plant["Specie"],
-                        date_added,
-                        current_time - timedelta(minutes=random.randint(0, 8)),
-                        current_time - timedelta(minutes=random.randint(0, 8)),
-                        current_time - timedelta(minutes=random.randint(0, 8)),
-                        [],
-                        zone_id=zone_id,
-                    )
-                    plant.inspect()
-                    garden.append(plant)
-                except (KeyError, ValueError) as e:
-                    logger.warning(f"Skipping invalid row {row_number}: {e} - Data: {stored_plant}")
-                    # Continue processing other plants if one fails
-                    continue
-    except (FileNotFoundError, PermissionError, OSError) as e:
-        logger.error(f"Error reading file {file_name}: {e}")
-    except Exception as e:
-        logger.error(f"Unexpected error reading plants file: {e}")
-
-    logger.info(f"Plants file processed: {len(garden)} plants loaded from {file_name}")
-    return garden

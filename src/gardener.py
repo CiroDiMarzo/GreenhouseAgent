@@ -12,125 +12,89 @@ logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
 
 class Gardener:
-    """Rappresenta un giardiniere che si prende cura delle piante in un orto.
+    """It represents a gardener caring for plants in a vegetable garden.
 
-    Il giardiniere ispeziona regolarmente le piante e esegue operazioni di manutenzione
-    (innaffiatura, fertilizzazione, applicazione di pesticidi) in base allo stato di salute
-    di ogni pianta. Le modifiche vengono persistite nel database tramite PlantRepository.
+    The gardener regularly inspects the plants and performs maintenance tasks
+    (watering, fertilizing, pesticide application) based on the health status
+    of each plant. Changes are persisted in the database via PlantRepository.
     """
-    
-    logger = logging.getLogger('Gardener')
 
-    def __init__(self, name: str, plant_repository: PlantRepository):
-        """Inizializza un nuovo giardiniere.
+    # Logger for tracking gardener operations
+    logger = logging.getLogger("Gardener")
 
-        Args:
-            name: Nome del giardiniere
-            plant_repository: Repository per la persistenza delle piante nel database
+    def __init__(self, name: str):
+        """Initialize a new gardener.
+
+                Args:
+                    name: Gardener's name
+        plant_repository: Repository for plant persistence in the database
         """
-        self.name = name
+        self.name: str = name
+        """Identifier name of the gardener"""
         self.garden: list[Plant] = []
-        self.plant_repository = plant_repository
+        """List of plants currently under this gardener's care"""
 
     def __str__(self) -> str:
-        """Restituisce una rappresentazione testuale del giardiniere.
+        """Returns a text representation of the gardener.
 
         Returns:
-            Stringa di presentazione del giardiniere
+            Gardener's introduction string
         """
         return f"Hello, I'm {self.name}"
 
     def move_to_garden(self, garden: list[Plant]) -> None:
-        """Assegna un orto al giardiniere.
+        """Assign a garden to the gardener.
 
         Args:
-            garden: Lista di piante che compongono l'orto
+            garden: List of plants that make up the garden
         """
         self.garden = garden
         self.logger.info(f"{self.name} moves in the garden.")
 
     def leave_garden(self) -> None:
-        """Rimuove il giardiniere dall'orto."""
+        """Removes the gardener from the garden."""
         self.garden = []
         self.logger.info(f"{self.name} leaves the garden.")
 
     async def start_working(self) -> None:
-        """Avvia il ciclo di lavoro principale del giardiniere.
+        """Starts the gardener's main work cycle.
 
-        Esegue continuamente operazioni di manutenzione ogni 10 secondi.
-        Questo metodo è asincrono e può essere interrotto con Ctrl+C.
+        Performs maintenance tasks continuously every 10 seconds.
+        This method is asynchronous and can be interrupted with Ctrl+C.
         """
         while True:
             self.logger.info("-- Start working")
             await self.perform_maintenance()
             self.logger.info("-- Work concluded")
-            # Attende un numero configurato secondi prima del prossimo ciclo di manutenzione
+
             await asyncio.sleep(GARDENER_IDLE_TIME)
 
     async def perform_maintenance(self) -> None:
-        """Esegue ciclo di manutenzione su tutte le piante nell'orto.
+        """Performs the maintenance cycle on all plants in the garden.
 
-        Per ogni pianta:
-        1. Ispeziona lo stato di salute
-        2. Esegue le operazioni necessarie (innaffiatura, fertilizzazione, pesticidi)
-        3. Re-ispeziona lo stato
-        4. Salva le modifiche nel database
-
-        Se il giardiniere non è assegnato a nessun orto, la manutenzione viene saltata.
-        Gli errori di salvataggio nel database vengono registrati ma non interrompono l'esecuzione.
+        Identifies plants that need watering and proceeds with irrigation.
+        If the gardener is not assigned to any garden, the cycle is skipped.
         """
-        # Verifica se il giardiniere è assegnato a un orto
         if not self.garden:
             self.logger.warning(f"{self.name} is not in a garden")
             return
 
-        # Itera su tutte le piante nell'orto
-        for row_num, plant in enumerate(self.garden):
-            # Prima ispezione per valutare lo stato di salute
-            plant.inspect()
+        thirsty_plants = [p for p in self.garden if PlantStatus.NEEDS_WATER in p.status]
 
-            # Esecuzione delle operazioni di manutenzione in base allo stato
-            if PlantStatus.THIRSTY in plant.status:
-                await self.water_plant(plant)
-            if PlantStatus.HUNGRY in plant.status:
-                await self.fertilize_plant(plant)
-            if PlantStatus.SICK in plant.status:
-                await self.apply_pesticide(plant)
+        for row_num, plant in enumerate(thirsty_plants):
+            await self.open_faucet(plant, row_num)
 
-            # Re-ispezione dopo le operazioni di manutenzione
-            plant.inspect()
+    async def open_faucet(self, plant: Plant, row_num: int) -> None:
+        """Opens the faucet to water the plant and updates the last watering date.
 
-            # Persistenza delle modifiche nel database
-            try:
-                self.plant_repository.save(plant)
-            except (ValueError, sqlite3.Error) as exc:
-                self.logger.error(
-                    f"Errore durante il salvataggio della pianta {plant} alla riga {row_num}: {exc}"
-                )
-
-    async def water_plant(self, plant: Plant) -> None:
-        """Innaffia una pianta e aggiorna la data dell'ultima innaffiatura.
+        Note: This method will update the plant database and in the future will drop
+        a message in a queue that will be read by another async system to
+        open the corresponding electro-magnetic valve.
 
         Args:
-            plant: Pianta da innaffiare
+            plant: Plant to be watered
+            row_num: Row number for tracking in logs
         """
         plant.date_watered = datetime.now()
+
         self.logger.info(f"Watering plant {plant}")
-
-    async def fertilize_plant(self, plant: Plant) -> None:
-        """Fertilizza una pianta e aggiorna la data dell'ultima fertilizzazione.
-
-        Args:
-            plant: Pianta da fertilizzare
-        """
-        plant.date_fertilized = datetime.now()
-        self.logger.info(f"Fertilizing plant {plant}")
-
-    async def apply_pesticide(self, plant: Plant) -> None:
-        """Applica pesticida a una pianta e aggiorna la data dell'ultima applicazione.
-
-        Args:
-            plant: Pianta da curare con pesticida
-        """
-        plant.date_cured = datetime.now()
-        self.logger.info(f"Applying pesticide to plant {plant}")

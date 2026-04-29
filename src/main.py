@@ -1,14 +1,10 @@
 from pathlib import Path
-from csv import DictReader
-from datetime import datetime, timedelta
 import logging
 from Plant.plant_repository import PlantRepository
 from PlantZone.plant_zone_repository import PlantZoneRepository
 from gardener import Gardener
-from Plant.plant import Plant
-from globals import DATE_FORMAT, LOG_FORMAT
+from globals import LOG_FORMAT
 from migration import load_data
-import random
 import asyncio
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
@@ -28,12 +24,14 @@ async def main():
 
 async def start_gardening(db_file_path):
     plant_repository = PlantRepository(str(db_file_path))
-    
     my_garden = plant_repository.get_all()
-
+    
+    plant_zone_repository = PlantZoneRepository(str(db_file_path))
+    plant_zones = plant_zone_repository.get_all()
+    
     logger.info(f"The garden has {len(my_garden)} plants.")
         
-    gardner = Gardener("Silvano", plant_repository)
+    gardner = Gardener("Silvano")
     logger.info(f"{gardner}")
 
     gardner.move_to_garden(my_garden)

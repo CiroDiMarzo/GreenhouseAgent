@@ -26,4 +26,4 @@ class PlantZone:
         
         if self.plants:
             for row_num, plant in enumerate(self.plants):
-                plant.inspect_environment(value)
+                plant.inspect_self(value)

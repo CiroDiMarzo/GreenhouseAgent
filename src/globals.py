@@ -24,14 +24,11 @@ LOG_FORMAT = '%(asctime)s - %(levelname)s - [%(name)s] - %(message)s'
 # How long the gardener waits between maintenance cycles
 GARDENER_IDLE_TIME = 10
 
-# Time threshold (seconds) before a plant is marked as THIRSTY
-PLANT_TIME_DELTA_THIRSTY = 15
+# ============================================================================
+# Biological thresholds of the plants
+# ============================================================================
 
-# Time threshold (seconds) before a plant is marked as HUNGRY (needs fertilization)
-PLANT_TIME_DELTA_HUNGRY = 15
-
-# Time threshold (seconds) before a plant is marked as SICK (needs pesticide)
-PLANT_TIME_DELTA_SICK = 15
+MOISTURE_THRESHOLD = 0.4
 
 # ============================================================================
 # Logging Configuration

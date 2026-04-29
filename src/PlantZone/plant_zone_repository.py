@@ -5,23 +5,21 @@ from datetime import datetime
 from PlantZone.plant_zone import PlantZone
 from globals import DATE_FORMAT, LOG_FORMAT
 
-logging.basicConfig(
-    level=logging.INFO,
-    format=LOG_FORMAT
-)
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+
 
 class PlantZoneRepository:
-    logger = logging.getLogger('PlantZoneRepository')
-    
+    logger = logging.getLogger("PlantZoneRepository")
+
     def __init__(self, db_path: str):
-        
+
         if not db_path:
             raise ValueError(
                 "Database path cannot be empty or None. Please provide a valid path to the SQLite database file."
             )
-        
+
         self.db_path = db_path
-        
+
         try:
             self.__init__db()
         except sqlite3.Error as e:
@@ -30,20 +28,18 @@ class PlantZoneRepository:
                 f"Unable to initialize PlantRepository with database file '{db_path}'. "
                 f"Database error: {str(e)}"
             )
-        
+
     def __init__db(self):
         try:
             with sqlite3.connect(self.db_path) as connection:
                 cursor = connection.cursor()
-                cursor.execute(
-                    """
+                cursor.execute("""
                     CREATE TABLE IF NOT EXISTS plant_zones (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         name TEXT NOT NULL,
                         moisture_level REAL DEFAULT 0.0
                     );
-                    """
-                )
+                    """)
                 connection.commit()
                 self.logger.debug("plant_zones table created or already exists")
         except sqlite3.Error as e:
@@ -52,14 +48,14 @@ class PlantZoneRepository:
                 f"Unable to initialize database schema. Failed to create 'plant_zones' table. "
                 f"Database error: {str(e)}"
             )
-            
+
     def save(self, plant_zone: PlantZone):
         if not isinstance(plant_zone, PlantZone):
             raise TypeError(
                 f"Expected {self.__class__.__name__} instance, got {type(plant_zone).__name__}. "
                 f"Please ensure you are passing a valid {self.__class__.__name__} object."
             )
-        
+
         try:
             with sqlite3.connect(self.db_path) as connection:
                 cursor = connection.cursor()
@@ -69,17 +65,19 @@ class PlantZoneRepository:
                     (id, name, moisture_level)
                     VALUES (?, ?, ?)
                     """,
-                    (
-                        plant_zone.id,
-                        plant_zone.name,
-                        plant_zone.moisture_level
-                    ),
+                    (plant_zone.id, plant_zone.name, plant_zone.moisture_level),
                 )
                 connection.commit()
-                self.logger.info(f"Plant zone with id {plant_zone.id} saved successfully")
+                self.logger.info(
+                    f"Plant zone with id {plant_zone.id} saved successfully"
+                )
         except AttributeError as e:
-            self.logger.error(f"Error: {self.__class__.__name__} missing required attribute: {e}")
-            raise ValueError(f"{self.__class__.__name__} does not contain all necessary attributes: {e}")
+            self.logger.error(
+                f"Error: {self.__class__.__name__} missing required attribute: {e}"
+            )
+            raise ValueError(
+                f"{self.__class__.__name__} does not contain all necessary attributes: {e}"
+            )
         except sqlite3.Error as e:
             self.logger.error(f"Error during {self.__class__.__name__} saving: {e}")
             raise
@@ -116,33 +114,31 @@ class PlantZoneRepository:
                 row = cursor.fetchone()
 
                 if row is None:
-                    logger.warning(f"Plant zone with id {zone_id} not found")
+                    self.logger.warning(f"Plant zone with id {zone_id} not found")
                     raise ValueError(f"Plant zone with id {zone_id} not found")
 
                 try:
                     plant_zone = PlantZone(
-                        id=int(row[0]),
-                        name=row[1],
-                        moisture_level=float(row[2])
+                        id=int(row[0]), name=row[1], moisture_level=float(row[2])
                     )
-                    logger.info(f"Plant zone with id {zone_id} retrieved successfully")
+                    self.logger.info(
+                        f"Plant zone with id {zone_id} retrieved successfully"
+                    )
                     return plant_zone
                 except (ValueError, KeyError) as e:
-                    logger.error(
+                    self.logger.error(
                         f"Error parsing data for plant zone with id {zone_id}: {e}"
                     )
                     raise ValueError(
                         f"Corrupted data for plant zone with id {zone_id}: {e}"
                     )
         except sqlite3.Error as e:
-            logger.error(
-                f"Error during reading plant zone with id {zone_id}: {e}"
-            )
+            self.logger.error(f"Error during reading plant zone with id {zone_id}: {e}")
             raise
         except ValueError:
             raise
         except Exception as e:
-            logger.error(f"Unexpected error during get_by_id({zone_id}): {e}")
+            self.logger.error(f"Unexpected error during get_by_id({zone_id}): {e}")
             raise
 
     def get_by_name(self, zone_name: str) -> PlantZone:
@@ -165,42 +161,92 @@ class PlantZoneRepository:
             )
 
         if not zone_name or not zone_name.strip():
-            raise ValueError(
-                f"zone_name cannot be empty or contain only whitespace"
-            )
+            raise ValueError(f"zone_name cannot be empty or contain only whitespace")
 
         try:
             with sqlite3.connect(self.db_path) as connection:
                 cursor = connection.cursor()
-                cursor.execute("""SELECT * FROM plant_zones WHERE name = ?""", (zone_name,))
+                cursor.execute(
+                    """SELECT * FROM plant_zones WHERE name = ?""", (zone_name,)
+                )
                 row = cursor.fetchone()
 
                 if row is None:
-                    logger.warning(f"Plant zone with name '{zone_name}' not found")
+                    self.logger.warning(f"Plant zone with name '{zone_name}' not found")
                     raise ValueError(f"Plant zone with name '{zone_name}' not found")
 
                 try:
                     plant_zone = PlantZone(
-                        id=int(row[0]),
-                        name=row[1],
-                        moisture_level=float(row[2])
+                        id=int(row[0]), name=row[1], moisture_level=float(row[2])
                     )
-                    logger.info(f"Plant zone with name '{zone_name}' retrieved successfully")
+                    self.logger.info(
+                        f"Plant zone with name '{zone_name}' retrieved successfully"
+                    )
                     return plant_zone
                 except (ValueError, KeyError) as e:
-                    logger.error(
+                    self.logger.error(
                         f"Error parsing data for plant zone with name '{zone_name}': {e}"
                     )
                     raise ValueError(
                         f"Corrupted data for plant zone with name '{zone_name}': {e}"
                     )
         except sqlite3.Error as e:
-            logger.error(
+            self.logger.error(
                 f"Error during reading plant zone with name '{zone_name}': {e}"
             )
             raise
         except ValueError:
             raise
         except Exception as e:
-            logger.error(f"Unexpected error during get_by_name('{zone_name}'): {e}")
+            self.logger.error(
+                f"Unexpected error during get_by_name('{zone_name}'): {e}"
+            )
             raise
+
+    def get_all(self) -> list[PlantZone]:
+        """Retrieves all plant zones from the database.
+
+        Returns:
+            List of plant zones. Empty list if no plant zones found.
+
+        Raises:
+            sqlite3.Error: If an error occurs during reading from the database
+            ValueError: If data in the database is corrupted
+        """
+
+        plant_zones: list[PlantZone] = []
+
+        try:
+            with sqlite3.connect(self.db_path) as connection:
+                cursor = connection.cursor()
+                cursor.execute("""SELECT * FROM plant_zones""")
+                rows = cursor.fetchall()
+
+                if not rows:
+                    self.logger.warning(f"The plant zone table is empty")
+                    raise ValueError(f"The plant zone table is empty")
+
+                for idx, row in enumerate(rows):
+                    try:
+                        plant_zone = PlantZone(
+                            id=int(row[0]), name=row[1], moisture_level=float(row[2])
+                        )
+                        plant_zones.append(plant_zone)
+                    except (ValueError, KeyError) as e:
+                        self.logger.error(
+                            f"Error parsing data for plant zone at row number '{idx}': {e}"
+                        )
+                        raise ValueError(
+                            f"Corrupted data for plant zone with at row number '{idx}': {e}"
+                        )
+                self.logger.info(f"Retrieved {len(plant_zones)} plant zones from the database")
+        except sqlite3.Error as e:
+            self.logger.error(f"Error during reading plant zones: {e}")
+            raise
+        except ValueError:
+            raise
+        except Exception as e:
+            self.logger.error(f"Unexpected error during get_all: {e}")
+            raise
+        
+        return plant_zones
