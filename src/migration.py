@@ -38,7 +38,7 @@ def load_data(
             raise ImportError(f"No zones found in {csv_zone_file_path}. Ensure the file contains zone data.")
 
         write_zones(db_file_path, zones_list)
-        plant_list = read_garden(csv_file_path, zones_list[0].id)
+        plant_list = read_garden(csv_file_path)
     except (FileNotFoundError, PermissionError, OSError, ValueError, ImportError) as e:
         logger.error(f"Error reading CSV files: {e}")
         raise
@@ -130,7 +130,7 @@ def write_zones(db_file_path: str, zone_list: list[PlantZone]) -> None:
         f"Migration completed: {plants_zones_saved} plant zones saved, {plants_zones_failed} errors"
     )
 
-def read_garden(csv_file_path: str, zone_id: int) -> list[Plant]:
+def read_garden(csv_file_path: str) -> list[Plant]:
     """Read plants from CSV file and convert to Plant objects.
 
     Args:
@@ -170,6 +170,9 @@ def read_garden(csv_file_path: str, zone_id: int) -> list[Plant]:
                     specie = line.get("Specie", "").strip()
                     if not specie:
                         raise ValueError("'Specie' field is empty or missing")
+                    
+                    # Parse zone ID
+                    zone_id = int(line["Zona"])
 
                     new_plant = Plant(
                         id=plant_id,
@@ -182,7 +185,7 @@ def read_garden(csv_file_path: str, zone_id: int) -> list[Plant]:
                         date_fertilized=current_time
                         - timedelta(minutes=random.randint(0, 8)),
                         status=[],
-                        zone_id=zone_id,
+                        zone_id=int(zone_id),
                     )
                     plant_list.append(new_plant)
 

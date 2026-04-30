@@ -1,12 +1,13 @@
 from datetime import datetime
 from Plant.plant_status import PlantStatus
+from BaseEntity.base_entity import BaseEntity
 from globals import (
     DATE_FORMAT,
     MOISTURE_THRESHOLD
 )
 
 
-class Plant:
+class Plant(BaseEntity):
     """Represents a plant with health monitoring capabilities."""
     
     # Probability (0-100) that a plant transitions to unhealthy status
@@ -34,6 +35,7 @@ class Plant:
         self.zone_id = zone_id
             
     def inspect_self(self, moisture_level: float):
+        self.is_dirty = True
         self.status.clear()
         
         if(moisture_level <= MOISTURE_THRESHOLD):

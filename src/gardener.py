@@ -56,19 +56,6 @@ class Gardener:
         self.garden = []
         self.logger.info(f"{self.name} leaves the garden.")
 
-    async def start_working(self) -> None:
-        """Starts the gardener's main work cycle.
-
-        Performs maintenance tasks continuously every 10 seconds.
-        This method is asynchronous and can be interrupted with Ctrl+C.
-        """
-        while True:
-            self.logger.info("-- Start working")
-            await self.perform_maintenance()
-            self.logger.info("-- Work concluded")
-
-            await asyncio.sleep(GARDENER_IDLE_TIME)
-
     async def perform_maintenance(self) -> None:
         """Performs the maintenance cycle on all plants in the garden.
 
@@ -82,9 +69,9 @@ class Gardener:
         thirsty_plants = [p for p in self.garden if PlantStatus.NEEDS_WATER in p.status]
 
         for row_num, plant in enumerate(thirsty_plants):
-            await self.open_faucet(plant, row_num)
+            await self.open_faucet(plant, 0.2, row_num)
 
-    async def open_faucet(self, plant: Plant, row_num: int) -> None:
+    async def open_faucet(self, plant: Plant, water_qty: float, row_num: int) -> None:
         """Opens the faucet to water the plant and updates the last watering date.
 
         Note: This method will update the plant database and in the future will drop
@@ -93,8 +80,9 @@ class Gardener:
 
         Args:
             plant: Plant to be watered
+            water_qty: the quantity of water the faucet should let pass before closing
             row_num: Row number for tracking in logs
         """
         plant.date_watered = datetime.now()
 
-        self.logger.info(f"Watering plant {plant}")
+        self.logger.info(f"Watering plant {plant} with {water_qty} litres of water.")

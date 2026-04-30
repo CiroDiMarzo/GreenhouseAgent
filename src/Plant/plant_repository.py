@@ -72,7 +72,7 @@ class PlantRepository:
             raise
 
     def save(self, plant: Plant):
-        """Saves or updates a plant in the database.
+        """Saves or updates a plant in the database, but only if the entity is dirty.
 
         Args:
             plant: Plant instance to save

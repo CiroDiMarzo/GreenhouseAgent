@@ -3,7 +3,7 @@ import logging
 from Plant.plant_repository import PlantRepository
 from PlantZone.plant_zone_repository import PlantZoneRepository
 from gardener import Gardener
-from globals import LOG_FORMAT
+from globals import GARDENER_IDLE_TIME, LOG_FORMAT
 from migration import load_data
 import asyncio
 
@@ -29,17 +29,35 @@ async def start_gardening(db_file_path):
     plant_zone_repository = PlantZoneRepository(str(db_file_path))
     plant_zones = plant_zone_repository.get_all()
     
-    logger.info(f"The garden has {len(my_garden)} plants.")
+    for plant_zone in plant_zones:
+        plant_zone.plants = [p for p in my_garden if plant_zone.id == p.zone_id]
         
     gardner = Gardener("Silvano")
     logger.info(f"{gardner}")
 
     gardner.move_to_garden(my_garden)
 
-    await gardner.start_working()
+    """Starts the gardener's main work cycle.
+
+    Performs maintenance tasks continuously every 10 seconds.
+    This method is asynchronous and can be interrupted with Ctrl+C.
+    """
+    while True:
+        for plant_zone in plant_zones:
+            plant_zone.read_sensors()
+        
+        await gardner.perform_maintenance()
+        
+        for plant_zone in plant_zones:
+            if plant_zone.is_dirty:
+                plant_zone_repository.save(plant_zone)
             
-    for plant in my_garden:
-        logger.info(f"{plant}")
+            for plant in plant_zone.plants:
+                if plant.is_dirty:
+                    plant_repository.save(plant)
+
+        logger.info("Ciclo di manutenzione terminato.")
+        await asyncio.sleep(GARDENER_IDLE_TIME)
         
 if __name__ == "__main__":
     asyncio.run(main())

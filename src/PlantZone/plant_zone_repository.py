@@ -50,6 +50,12 @@ class PlantZoneRepository:
             )
 
     def save(self, plant_zone: PlantZone):
+        """
+            Saves the plant_zone in the database, but only if the entity is dirty is dirty.
+            
+            Args:
+                
+        """
         if not isinstance(plant_zone, PlantZone):
             raise TypeError(
                 f"Expected {self.__class__.__name__} instance, got {type(plant_zone).__name__}. "

@@ -22,7 +22,7 @@ LOG_FORMAT = '%(asctime)s - %(levelname)s - [%(name)s] - %(message)s'
 # ============================================================================
 
 # How long the gardener waits between maintenance cycles
-GARDENER_IDLE_TIME = 10
+GARDENER_IDLE_TIME = 3
 
 # ============================================================================
 # Biological thresholds of the plants
