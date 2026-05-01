@@ -9,30 +9,21 @@ from globals import (
 
 class Plant(BaseEntity):
     """Represents a plant with health monitoring capabilities."""
-    
-    # Probability (0-100) that a plant transitions to unhealthy status
-    # when time thresholds are exceeded
-    CHANGE_STATUS_PERCENT = 75
 
     def __init__(
         self,
         id: int,
         specie: str,
         date_added: datetime,
-        date_watered: datetime,
-        date_fertilized: datetime,
-        date_cured: datetime,
         status: list[PlantStatus],
         zone_id: int
     ):
         self.specie = specie
         self.id = id
         self.date_added = date_added
-        self.date_watered = date_watered
-        self.date_fertilized = date_fertilized
-        self.date_cured = date_cured
         self.status = status
         self.zone_id = zone_id
+        self.is_dirty = False
             
     def inspect_self(self, moisture_level: float):
         self.is_dirty = True
@@ -47,4 +38,4 @@ class Plant(BaseEntity):
         return f"ID: {self.id}) - Specie: {self.specie} - Salute: {", ".join(s_status.value for s_status in self.status)}"
 
     def full_print(self):
-        return f"ID: {self.id}, Specie: {self.specie}, Data inserimento: {self.date_added.strftime(DATE_FORMAT)}, Ultima innaffiatura: {self.date_watered.strftime(DATE_FORMAT)}, Data applicazione nutrienti: {self.date_fertilized}, Data applicazione pesticida: {self.date_cured}, Salute: {", ".join(s_status.value for s_status in self.status)}, Zona: {self.zone_id}"
+        return f"ID: {self.id}, Specie: {self.specie}, Data inserimento: {self.date_added.strftime(DATE_FORMAT)}, Salute: {", ".join(s_status.value for s_status in self.status)}, Zona: {self.zone_id}"

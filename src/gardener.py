@@ -1,12 +1,8 @@
-from datetime import datetime
-import asyncio
-import sqlite3
 import logging
 
-from Plant.plant_repository import PlantRepository
-from Plant.plant_status import PlantStatus
 from Plant.plant import Plant
-from globals import LOG_FORMAT, GARDENER_IDLE_TIME
+from PlantZone.plant_zone import PlantZone
+from globals import LOG_FORMAT, MOISTURE_THRESHOLD
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
@@ -56,7 +52,7 @@ class Gardener:
         self.garden = []
         self.logger.info(f"{self.name} leaves the garden.")
 
-    async def perform_maintenance(self) -> None:
+    async def perform_maintenance(self, plant_zone: PlantZone) -> None:
         """Performs the maintenance cycle on all plants in the garden.
 
         Identifies plants that need watering and proceeds with irrigation.
@@ -66,23 +62,15 @@ class Gardener:
             self.logger.warning(f"{self.name} is not in a garden")
             return
 
-        thirsty_plants = [p for p in self.garden if PlantStatus.NEEDS_WATER in p.status]
+        if plant_zone.moisture <= MOISTURE_THRESHOLD:
+            await self.open_faucet(plant_zone, 0.2)
 
-        for row_num, plant in enumerate(thirsty_plants):
-            await self.open_faucet(plant, 0.2, row_num)
-
-    async def open_faucet(self, plant: Plant, water_qty: float, row_num: int) -> None:
-        """Opens the faucet to water the plant and updates the last watering date.
+    async def open_faucet(self, plant_zone: PlantZone, water_qty: float) -> None:
+        """Opens the faucet to water the zone and updates the last watering date.
 
         Note: This method will update the plant database and in the future will drop
         a message in a queue that will be read by another async system to
         open the corresponding electro-magnetic valve.
-
-        Args:
-            plant: Plant to be watered
-            water_qty: the quantity of water the faucet should let pass before closing
-            row_num: Row number for tracking in logs
         """
-        plant.date_watered = datetime.now()
-
-        self.logger.info(f"Watering plant {plant} with {water_qty} litres of water.")
+        plant_zone.moisture = MOISTURE_THRESHOLD * 1.3
+        self.logger.info(f"Watering zone {plant_zone.name}: {plant_zone.moisture}")

@@ -151,7 +151,6 @@ def read_garden(csv_file_path: str) -> list[Plant]:
         raise FileNotFoundError(f"CSV file not found: {csv_file_path}")
 
     plant_list: list[Plant] = []
-    current_time = datetime.now()
 
     try:
         with open(csv_file_path, "r", encoding="UTF-8") as csv_file:
@@ -178,12 +177,6 @@ def read_garden(csv_file_path: str) -> list[Plant]:
                         id=plant_id,
                         specie=specie,
                         date_added=date_added,
-                        date_watered=current_time
-                        - timedelta(minutes=random.randint(0, 8)),
-                        date_cured=current_time
-                        - timedelta(minutes=random.randint(0, 8)),
-                        date_fertilized=current_time
-                        - timedelta(minutes=random.randint(0, 8)),
                         status=[],
                         zone_id=int(zone_id),
                     )

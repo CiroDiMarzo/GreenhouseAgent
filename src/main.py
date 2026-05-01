@@ -3,7 +3,13 @@ import logging
 from Plant.plant_repository import PlantRepository
 from PlantZone.plant_zone_repository import PlantZoneRepository
 from gardener import Gardener
-from globals import GARDENER_IDLE_TIME, LOG_FORMAT
+from globals import (
+    GARDENER_IDLE_TIME,
+    LOG_FORMAT,
+    DB_FILE_PATH,
+    PLANTS_CVS_FILE,
+    PLANT_ZONES_CVS_FILE
+)
 from migration import load_data
 import asyncio
 
@@ -12,21 +18,16 @@ logger = logging.getLogger('main')
 
 
 async def main():
-    BASE_PATH = Path(__file__).parent.parent
     
-    db_file_path = BASE_PATH / 'data' / 'garden.db'
-    plants_csv_file = BASE_PATH / 'plants_registry.csv'
-    plants_zones_cvl_file = BASE_PATH / 'plants_zones_registry.csv'
+    load_data(str(PLANTS_CVS_FILE), str(PLANT_ZONES_CVS_FILE), str(DB_FILE_PATH))
     
-    load_data(str(plants_csv_file), str(plants_zones_cvl_file), str(db_file_path))
-    
-    await start_gardening(db_file_path)
+    await start_gardening(DB_FILE_PATH)
 
-async def start_gardening(db_file_path):
-    plant_repository = PlantRepository(str(db_file_path))
+async def start_gardening(DB_FILE_PATH):
+    plant_repository = PlantRepository(str(DB_FILE_PATH))
     my_garden = plant_repository.get_all()
     
-    plant_zone_repository = PlantZoneRepository(str(db_file_path))
+    plant_zone_repository = PlantZoneRepository(str(DB_FILE_PATH))
     plant_zones = plant_zone_repository.get_all()
     
     for plant_zone in plant_zones:
@@ -44,9 +45,10 @@ async def start_gardening(db_file_path):
     """
     while True:
         for plant_zone in plant_zones:
-            plant_zone.read_sensors()
+            await plant_zone.read_sensors()
         
-        await gardner.perform_maintenance()
+        for plant_zone in plant_zones:
+            await gardner.perform_maintenance(plant_zone)
         
         for plant_zone in plant_zones:
             if plant_zone.is_dirty:

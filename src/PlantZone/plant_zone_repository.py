@@ -71,9 +71,11 @@ class PlantZoneRepository:
                     (id, name, moisture_level)
                     VALUES (?, ?, ?)
                     """,
-                    (plant_zone.id, plant_zone.name, plant_zone.moisture_level),
+                    (plant_zone.id, plant_zone.name, plant_zone.moisture),
                 )
                 connection.commit()
+                plant_zone.is_dirty = False
+                
                 self.logger.info(
                     f"Plant zone with id {plant_zone.id} saved successfully"
                 )

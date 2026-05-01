@@ -47,12 +47,9 @@ class PlantRepository:
                         id INTEGER PRIMARY KEY,
                         specie TEXT NOT NULL,
                         date_added TEXT,
-                        date_watered TEXT,
-                        date_fertilized TEXT,
-                        date_cured TEXT,
                         status TEXT
                     )
-                """
+                    """
                 )
                 # Check if zone_id column already exists
                 cursor.execute("PRAGMA table_info(plants)")
@@ -94,21 +91,20 @@ class PlantRepository:
                 cursor.execute(
                     """
                     INSERT OR REPLACE INTO plants 
-                    (id, specie, date_added, date_watered, date_fertilized, date_cured, status, zone_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    (id, specie, date_added, status, zone_id)
+                    VALUES (?, ?, ?, ?, ?)
                     """,
                     (
                         plant.id,
                         plant.specie,
                         plant.date_added.strftime(DATE_FORMAT),
-                        plant.date_watered.strftime(DATE_FORMAT),
-                        plant.date_fertilized.strftime(DATE_FORMAT),
-                        plant.date_cured.strftime(DATE_FORMAT),
                         status_str,
                         plant.zone_id
                     ),
                 )
                 connection.commit()
+                plant.is_dirty = False
+                
                 self.logger.info(f"Plant with id {plant.id} saved successfully")
         except AttributeError as e:
             self.logger.error(f"Error: {self.__class__.__name__} missing required attribute: {e}")
@@ -139,16 +135,13 @@ class PlantRepository:
 
                 for idx, row in enumerate(rows):
                     try:
-                        status_list = [PlantStatus(s) for s in row[6].split(",") if s]
+                        status_list = [PlantStatus(s) for s in row[3].split(",") if s]
                         plant = Plant(
                             id=int(row[0]),
                             specie=row[1],
                             date_added=datetime.strptime(row[2], DATE_FORMAT),
-                            date_watered=datetime.strptime(row[3], DATE_FORMAT),
-                            date_fertilized=datetime.strptime(row[4], DATE_FORMAT),
-                            date_cured=datetime.strptime(row[5], DATE_FORMAT),
                             status=status_list,
-                            zone_id=int(row[7])
+                            zone_id=int(row[4])
                         )
                         plant_list.append(plant)
                     except (ValueError, KeyError) as e:
@@ -205,16 +198,13 @@ class PlantRepository:
                     raise ValueError(f"Plant with id {plant_id} not found")
 
                 try:
-                    status_list = [PlantStatus(s) for s in row[6].split(",") if s]
+                    status_list = [PlantStatus(s) for s in row[3].split(",") if s]
                     plant = Plant(
                         id=int(row[0]),
                         specie=row[1],
                         date_added=datetime.strptime(row[2], DATE_FORMAT),
-                        date_watered=datetime.strptime(row[3], DATE_FORMAT),
-                        date_fertilized=datetime.strptime(row[4], DATE_FORMAT),
-                        date_cured=datetime.strptime(row[5], DATE_FORMAT),
                         status=status_list,
-                        zone_id=int(row[7])
+                        zone_id=int(row[4])
                     )
                     self.logger.info(f"Plant with id {plant_id} retrieved successfully")
                     return plant

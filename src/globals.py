@@ -4,8 +4,18 @@ This module contains application-wide constants, logging configuration,
 and utility functions used throughout the project.
 """
 
+from pathlib import Path
 import random
 import logging
+
+# ============================================================================
+# Physical paths to database and CSV files
+# ============================================================================
+
+BASE_PATH = Path(__file__).parent.parent
+DB_FILE_PATH = BASE_PATH / 'data' / 'garden.db'
+PLANTS_CVS_FILE = BASE_PATH / 'plants_registry.csv'
+PLANT_ZONES_CVS_FILE = BASE_PATH / 'plants_zones_registry.csv'
 
 # ============================================================================
 # Date and Logging Format Constants
@@ -22,7 +32,7 @@ LOG_FORMAT = '%(asctime)s - %(levelname)s - [%(name)s] - %(message)s'
 # ============================================================================
 
 # How long the gardener waits between maintenance cycles
-GARDENER_IDLE_TIME = 3
+GARDENER_IDLE_TIME = 5
 
 # ============================================================================
 # Biological thresholds of the plants
